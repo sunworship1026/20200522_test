@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>時光氣味：客家時光儀修復任務</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts for Elegance -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Noto+Sans+TC:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Noto Sans TC', 'sans-serif'],
+                        serif: ['Cinzel', 'Noto Sans TC', 'serif'],
+                    },
+                    colors: {
+                        hakka: {
+                            gold: '#D4AF37',
+                            emerald: '#0F52BA',
+                            dark: '#0A0E17',
+                            card: '#121824',
+                            accent: '#39FF14',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 隱藏滾動條且防止橡皮筋效果 */
+        body {
+            background-color: #0A0E17;
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        /* 特工科技感微粒子閃爍 */
+        .glow-red {
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.7);
+        }
+        .glow-accent {
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.5);
+        }
+        .glow-gold {
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.6);
+        }
+
+        /* 脈衝警報效果 */
+        @keyframes pulse-red {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.85; }
+        }
+        .emergency-alert {
+            animation: pulse-red 1.5s infinite;
+        }
+
+        /* 旋轉齒輪 */
+        @keyframes rotate-gear {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .gear-rotate {
+            animation: rotate-gear 12s linear infinite;
+        }
+        .gear-rotate-reverse {
+            animation: rotate-gear 8s linear infinite reverse;
+        }
+
+        /* 粒子雨動畫 */
+        @keyframes fall {
+            0% { transform: translateY(-20px) rotate(0deg); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(105vh) rotate(360deg); opacity: 0; }
+        }
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            animation: fall linear infinite;
+        }
+
+        /* 水波紋動態震動 */
+        @keyframes wave {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(2.2); opacity: 0; }
+        }
+        .wave-effect {
+            animation: wave 1.8s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+        }
+
+        /* 仿3D客家時光儀旋轉 */
+        @keyframes time-device-spin {
+            0% { transform: rotate3d(1, 1, 1, 0deg); }
+            50% { transform: rotate3d(1, 1, 1, 180deg); }
+            100% { transform: rotate3d(1, 1, 1, 360deg); }
+        }
+        .spin-3d {
+            transform-style: preserve-3d;
+            animation: time-device-spin 20s linear infinite;
+        }
+
+        /* AI 打字動畫模擬 */
+        @keyframes blink {
+            50% { border-color: transparent; }
+        }
+        .typing-cursor {
+            border-right: 2px solid #39FF14;
+            animation: blink 0.75s step-end infinite;
+        }
+    </style>
+</head>
+<body class="text-gray-100 font-sans min-h-screen w-screen flex flex-col justify-between p-4 md:p-6 overflow-y-auto">
+
+    <!-- 隱藏的音訊元件，用於播放上傳的主題歌曲 -->
+    <audio id="theme-music" src="The_Highland_Ascent.mp3" preload="auto" loop></audio>
+
+    <!-- 背景科技網絡與網格 (VFX) -->
+    <div class="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,rgba(20,30,48,0.8),rgba(10,14,23,1))] pointer-events-none"></div>
+    <div class="absolute inset-0 z-0 opacity-10 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none"></div>
+    <div id="vfx-canvas-container" class="absolute inset-0 z-10 pointer-events-none overflow-hidden"></div>
+
+    <!-- 頂部狀態列 -->
+    <header class="relative z-20 flex justify-between items-center bg-hakka-card bg-opacity-70 backdrop-blur-md border border-gray-800 rounded-xl px-5 py-3 shadow-lg">
+        <div class="flex items-center gap-3">
+            <div class="w-3 h-3 rounded-full bg-hakka-accent animate-ping"></div>
+            <span class="text-xs tracking-widest text-hakka-accent uppercase font-mono">Time Agent HUD v2.6 [Gemini AI Engine 2.5]</span>
+        </div>
+        <div class="flex items-center gap-6">
+            <div class="text-right">
+                <span class="text-[10px] text-gray-500 block uppercase font-mono">Mission Code</span>
+                <span class="text-xs font-bold text-gray-300 font-mono tracking-wider">HAKKA-SMELL-2026</span>
+            </div>
+            <!-- 音量開關 -->
+            <button id="toggle-sound-btn" class="text-gray-400 hover:text-hakka-accent transition-colors p-2" onclick="toggleMute()">
+                <i id="sound-icon" class="fa-solid fa-volume-high text-lg"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- 主區塊：依據狀態渲染不同介面 -->
+    <main class="relative z-20 flex-1 my-4 flex flex-col justify-center items-center max-w-4xl w-full mx-auto overflow-hidden">
+
+        <!-- SCREEN 1: 任務簡報 (紅燈閃爍 + 郵件彈出) -->
+        <section id="screen-brief" class="w-full h-full flex flex-col justify-between bg-black bg-opacity-80 border-2 border-red-600 rounded-2xl p-6 glow-red relative overflow-hidden transition-all duration-700">
+            <!-- 警報背景紅光閃爍 -->
+            <div class="absolute inset-0 bg-red-900 bg-opacity-10 pointer-events-none emergency-alert"></div>
+            
+            <!-- 電子郵件標題 -->
+            <div class="relative z-10 flex justify-between items-center border-b border-red-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-circle-exclamation text-red-500 text-xl animate-bounce"></i>
+                    <span class="text-red-500 font-bold tracking-widest text-sm font-mono uppercase">【最高機密 / SECURITY LEVEL: RED】</span>
+                </div>
+                <div class="text-xs text-red-400 font-mono">TIME LEFT: OVERFLOW ERROR</div>
+            </div>
+
+            <!-- 郵件信封 + 內文滾動區 -->
+            <div class="flex-1 overflow-y-auto my-4 pr-2 relative z-10 text-gray-300 space-y-4 text-sm leading-relaxed scrollbar-thin">
+                <div class="bg-hakka-card bg-opacity-90 border border-gray-800 p-4 rounded-xl shadow-inner relative overflow-hidden">
+                    <!-- 茶葉與齒輪水印 -->
+                    <div class="absolute -right-12 -bottom-12 text-gray-800 opacity-20 pointer-events-none">
+                        <i class="fa-solid fa-gear text-9xl gear-rotate"></i>
+                    </div>
+                    <div class="absolute -right-6 -bottom-6 text-gray-800 opacity-15 pointer-events-none">
+                        <i class="fa-solid fa-leaf text-8xl"></i>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 border-b border-gray-800 pb-3 mb-3 text-xs text-gray-400 font-mono">
+                        <div><strong class="text-gray-300">寄件者：</strong>客家風味實驗室．首席研究員</div>
+                        <div><strong class="text-gray-300">主旨：</strong>【緊急】時光儀能量告急</div>
+                        <div><strong class="text-gray-300">時光座標：</strong>2026年．風土交界處</div>
+                    </div>
+
+                    <p class="text-hakka-accent font-bold mb-3 text-base">時光特工請注意！</p>
+                    <p class="mb-3">
+                        展場中央的「<span class="text-hakka-gold font-bold">客家時光儀</span>」剛剛遭到未知磁場干擾，指針完全停擺了！
+                    </p>
+                    <p class="mb-3">
+                        這座時光儀封存了客家庄數百年來「<span class="text-hakka-gold font-bold">時間的滋味</span>」——那些關於春耕、夏耘、秋收、冬藏，以及歲月沉澱的嗅覺記憶，此時正化為氣味粒子，逐漸在展場中消散。如果不在時限內將它們找回來，所有傳承的味道，都將從人類的記憶中永遠消失！
+                    </p>
+                    <p class="mb-3">我們需要你的感官天賦。現在，請化身為「時光特工」，執行以下救援任務：</p>
+                    <ul class="space-y-2 border-l-2 border-hakka-gold pl-4 text-xs text-gray-300">
+                        <li>🎯 <strong class="text-hakka-gold">【搜尋線索】</strong> 踏入展場，尋找散落各處的 <span class="text-hakka-accent font-bold">6 個神秘氣味瓶 (A-F)</span>。</li>
+                        <li>👃 <strong class="text-hakka-gold">【感官解碼】</strong> 湊近深吸一口氣，在平板點選對應氣味站。時光儀將為你增強視覺與聽覺（ASMR）訊號。</li>
+                        <li>📌 <strong class="text-hakka-gold">【時間定錨】</strong> 發揮你的敏銳直覺，將這些氣味正確歸位到 <strong class="text-white">[春、夏、秋、冬、歲月]</strong> 的時間座標軸上。</li>
+                        <li>🧠 <strong class="text-hakka-gold">【記憶共鳴】</strong> 使用全新的 <span class="text-hakka-accent font-bold">✨ Gemini AI 記憶解碼器</span>，上傳你對每股氣味的獨特記憶，體驗風土靈魂的歷史共振！</li>
+                    </ul>
+                    <p class="mt-4 text-xs text-gray-400 italic">當 6 種時光氣味再次合一，時光儀將重新啟動，你也能解鎖專屬的「時光性格密碼」。</p>
+                </div>
+            </div>
+
+            <!-- 啟動按鈕 -->
+            <button id="btn-accept-mission" class="w-full bg-gradient-to-r from-red-600 via-red-500 to-red-700 text-white font-bold tracking-widest text-lg py-4 rounded-xl shadow-lg hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-3 relative overflow-hidden z-10" onclick="acceptMission()">
+                <i class="fa-solid fa-circle-play text-xl animate-ping"></i>
+                🚨 【 點擊啟動：時光解碼器，接受任務！ 】
+            </button>
+        </section>
+
+        <!-- SCREEN 2: 氣味站選擇首頁 -->
+        <section id="screen-hub" class="w-full h-full flex flex-col justify-between hidden transition-all duration-700">
+            <!-- 上方任務進度指引 -->
+            <div class="bg-hakka-card border border-gray-800 rounded-xl p-4 mb-4 flex justify-between items-center">
+                <div>
+                    <h3 class="text-xs text-gray-400 uppercase tracking-widest font-mono">Mission Progress</h3>
+                    <p class="text-lg font-black text-hakka-gold">時光刻度解鎖中：<span id="collected-count">0</span> / 6</p>
+                </div>
+                <!-- 小型進度條 -->
+                <div class="flex-1 max-w-[200px] bg-gray-900 h-2.5 rounded-full mx-4 overflow-hidden border border-gray-800">
+                    <div id="progress-bar" class="bg-gradient-to-r from-hakka-accent to-hakka-gold h-full w-0 transition-all duration-500"></div>
+                </div>
+                <div class="text-right">
+                    <span id="time-spent" class="font-mono text-hakka-accent font-bold text-sm">00:00</span>
+                </div>
+            </div>
+
+            <!-- 氣味站六宮格選擇 -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 flex-1">
+                <!-- Scent A -->
+                <button onclick="selectScent('A')" id="btn-scent-A" class="group bg-hakka-card hover:bg-slate-800 border border-gray-800 hover:border-hakka-accent rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all duration-300 relative overflow-hidden">
+                    <div class="absolute top-2 right-2 flex items-center justify-center w-6 h-6 rounded-full bg-gray-900 text-xs font-bold text-gray-500" id="badge-A">A</div>
+                    <div class="w-14 h-14 rounded-full bg-slate-900 flex items-center justify-center border border-gray-700 group-hover:border-hakka-accent transition-all">
+                        <i class="fa-solid fa-vial text-2xl text-gray-400 group-hover:text-hakka-accent"></i>
+                    </div>
+                    <span class="text-xs text-gray-400 font-mono">Scent Station A</span>
+                    <span class="text-base font-bold text-white tracking-widest" id="name-A">未知氣味瓶 A</span>
+                </button>
+                <!-- Scent B -->
+                <button onclick="selectScent('B')" id="btn-scent-B" class="group bg-hakka-card hover:bg-slate-800 border border-gray-800 hover:border-hakka-accent rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all duration-300 relative overflow-hidden">
+                    <div class="absolute top-2 right-2 flex items-center justify-center w-6 h-6 rounded-full bg-gray-900 text-xs font-bold text-gray-500" id="badge-B">B</div>
+                    <div class="w-14 h-14 rounded-full bg-slate-900 flex items-center justify-center border border-gray-700 group-hover:border-hakka-accent transition-all">
+                        <i class="fa-solid fa-vial text-2xl text-gray-400 group-hover:text-hakka-accent"></i>
+                    </div>
+                    <span class="text-xs text-gray-400 font-mono">Scent Station B</span>
+                    <span class="text-base font-bold text-white tracking-widest" id="name-B">未知氣味瓶 B</span>
+                </button>
+                <!-- Scent C -->
+                <button onclick="selectScent('C')" id="btn-scent-C" class="group bg-hakka-card hover:bg-slate-800 border border-gray-800 hover:border-hakka-accent rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all duration-300 relative overflow-hidden">
+                    <div class="absolute top-2 right-2 flex items-center justify-center w-6 h-6 rounded-full bg-gray-900 text-xs font-bold text-gray-500" id="badge-C">C</div>
+                    <div class="w-14 h-14 rounded-full bg-slate-900 flex items-center justify-center border border-gray-700 group-hover:border-hakka-accent transition-all">
+                        <i class="fa-solid fa-vial text-2xl text-gray-400 group-hover:text-hakka-accent"></i>
+                    </div>
+                    <span class="text-xs text-gray-400 font-mono">Scent Station C</span>
+                    <span class="text-base font-bold text-white tracking-widest" id="name-C">未知氣味瓶 C</span>
+                </button>
+                <!-- Scent D -->
+                <button onclick="selectScent('D')" id="btn-scent-D" class="group bg-hakka-card hover:bg-slate-800 border border-gray-800 hover:border-hakka-accent rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all duration-300 relative overflow-hidden">
+                    <div class="absolute top-2 right-2 flex items-center justify-center w-6 h-6 rounded-full bg-gray-900 text-xs font-bold text-gray-500" id="badge-D">D</div>
+                    <div class="w-14 h-14 rounded-full bg-slate-900 flex items-center justify-center border border-gray-700 group-hover:border-hakka-accent transition-all">
+                        <i class="fa-solid fa-vial text-2xl text-gray-400 group-hover:text-hakka-accent"></i>
+                    </div>
+                    <span class="text-xs text-gray-400 font-mono">Scent Station D</span>
+                    <span class="text-base font-bold text-white tracking-widest" id="name-D">未知氣味瓶 D</span>
+                </button>
+                <!-- Scent E -->
+                <button onclick="selectScent('E')" id="btn-scent-E" class="group bg-hakka-card hover:bg-slate-800 border border-gray-800 hover:border-hakka-accent rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all duration-300 relative overflow-hidden">
+                    <div class="absolute top-2 right-2 flex items-center justify-center w-6 h-6 rounded-full bg-gray-900 text-xs font-bold text-gray-500" id="badge-E">E</div>
+                    <div class="w-14 h-14 rounded-full bg-slate-900 flex items-center justify-center border border-gray-700 group-hover:border-hakka-accent transition-all">
+                        <i class="fa-solid fa-vial text-2xl text-gray-400 group-hover:text-hakka-accent"></i>
+                    </div>
+                    <span class="text-xs text-gray-400 font-mono">Scent Station E</span>
+                    <span class="text-base font-bold text-white tracking-widest" id="name-E">未知氣味瓶 E</span>
+                </button>
+                <!-- Scent F -->
+                <button onclick="selectScent('F')" id="btn-scent-F" class="group bg-hakka-card hover:bg-slate-800 border border-gray-800 hover:border-hakka-accent rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all duration-300 relative overflow-hidden">
+                    <div class="absolute top-2 right-2 flex items-center justify-center w-6 h-6 rounded-full bg-gray-900 text-xs font-bold text-gray-500" id="badge-F">F</div>
+                    <div class="w-14 h-14 rounded-full bg-slate-900 flex items-center justify-center border border-gray-700 group-hover:border-hakka-accent transition-all">
+                        <i class="fa-solid fa-vial text-2xl text-gray-400 group-hover:text-hakka-accent"></i>
+                    </div>
+                    <span class="text-xs text-gray-400 font-mono">Scent Station F</span>
+                    <span class="text-base font-bold text-white tracking-widest" id="name-F">未知氣味瓶 F</span>
+                </button>
+            </div>
+
+            <!-- 下方提示訊息 -->
+            <div class="mt-4 text-center text-xs text-gray-500 tracking-wider">
+                <i class="fa-solid fa-magnifying-glass-location text-hakka-accent mr-1"></i> 請對應展場實體瓶，點擊上方解碼按鈕開啟時光氣味。
+            </div>
+        </section>
+
+        <!-- SCREEN 3: 解碼動畫 & 視覺特效沉浸體驗 -->
+        <section id="screen-decode" class="w-full h-full flex flex-col justify-center items-center hidden relative transition-all duration-700">
+            <!-- 解碼雷達雷射網 (SVG) -->
+            <div id="decoder-vfx" class="relative w-72 h-72 flex items-center justify-center bg-gray-900 bg-opacity-40 rounded-full border border-gray-800 shadow-2xl overflow-hidden mb-6">
+                <!-- 雷達掃描線 -->
+                <div class="absolute inset-0 border-2 border-hakka-accent border-dashed rounded-full opacity-30 animate-pulse"></div>
+                <div class="absolute w-[95%] h-[95%] border border-hakka-gold opacity-10 rounded-full"></div>
+                <div class="absolute w-full h-1 bg-gradient-to-r from-transparent via-hakka-accent to-transparent rotate-0 origin-center top-1/2 -mt-0.5 animate-spin" style="animation-duration: 3s"></div>
+                
+                <!-- 氣味瓶動態投影 -->
+                <div class="relative z-10 text-center">
+                    <i id="decode-icon" class="fa-solid fa-atom text-6xl text-hakka-accent animate-bounce"></i>
+                    <p class="text-xs font-mono text-hakka-accent tracking-widest mt-4 uppercase">Decoding Scent Particles</p>
+                    <p id="decode-scent-id" class="text-3xl font-serif font-black text-white tracking-widest mt-1">SCENT-X</p>
+                </div>
+            </div>
+
+            <div class="text-center max-w-md">
+                <h2 id="decode-status" class="text-xl font-bold tracking-widest text-hakka-gold mb-2">正在解碼氣味波形...</h2>
+                <p id="decode-instruction" class="text-sm text-gray-400 leading-relaxed">平板正在讀取粒子特徵，請閉上雙眼、細細品味，讓身心沉浸在 ASMR 氣味聲景中...</p>
+            </div>
+
+            <!-- 動態跳過動畫 (供展場微調) -->
+            <button onclick="skipDecodeAnimation()" class="absolute bottom-4 right-4 text-xs font-mono text-gray-600 hover:text-hakka-accent py-1 px-3 border border-gray-800 hover:border-hakka-accent rounded-full transition-all">
+                SKIP ANIMS
+            </button>
+        </section>
+
+        <!-- SCREEN 4: 時光分類問答 -->
+        <section id="screen-quiz" class="w-full h-full flex flex-col justify-between hidden transition-all duration-700">
+            <!-- 頂部問題引導 -->
+            <div class="bg-hakka-card border border-gray-800 rounded-xl p-5 mb-4 text-center relative overflow-hidden">
+                <div class="absolute top-2 left-2 px-2 py-0.5 bg-gray-900 rounded text-[10px] font-mono text-hakka-gold tracking-widest">
+                    SCENT STATION <span id="quiz-station-id">A</span>
+                </div>
+                <h2 class="text-xl font-bold tracking-widest text-white mt-2">這股氣味，屬於哪一個時光座標？</h2>
+                <p class="text-xs text-hakka-accent font-semibold tracking-wider mt-1">請結合剛才的視覺波紋與 ASMR 聲音特徵進行定錨</p>
+            </div>
+
+            <!-- 主視覺：氣味粒子動態顯示框 -->
+            <div class="flex-1 bg-black bg-opacity-50 border border-gray-800 rounded-xl mb-4 relative overflow-hidden flex items-center justify-center">
+                <!-- 這裡會有對應氣味的自製大圖示與粒子回饋特效 -->
+                <div id="quiz-visual-center" class="text-center relative z-10 p-6">
+                    <div class="w-24 h-24 rounded-full bg-slate-900 border-2 border-hakka-gold flex items-center justify-center mx-auto mb-4 relative shadow-lg">
+                        <i id="quiz-center-icon" class="fa-solid fa-wind text-4xl text-hakka-gold"></i>
+                    </div>
+                    <p id="quiz-visual-desc" class="text-sm text-gray-300 italic max-w-sm mx-auto leading-relaxed"></p>
+                </div>
+            </div>
+
+            <!-- 5個時光分類按鈕（春、夏、秋、冬、歲月） -->
+            <div class="grid grid-cols-5 gap-2 md:gap-3">
+                <button onclick="submitAnswer('春')" class="bg-gradient-to-b from-green-950 to-green-900 border border-green-800 hover:border-green-400 hover:scale-105 active:scale-95 py-5 px-1 rounded-xl text-center transition-all duration-300">
+                    <span class="block text-2xl mb-1">🌸</span>
+                    <strong class="text-green-300 text-sm tracking-wider block">春</strong>
+                    <span class="text-[9px] text-green-500 font-mono block">SPRING</span>
+                </button>
+                <button onclick="submitAnswer('夏')" class="bg-gradient-to-b from-red-950 to-red-900 border border-red-800 hover:border-red-400 hover:scale-105 active:scale-95 py-5 px-1 rounded-xl text-center transition-all duration-300">
+                    <span class="block text-2xl mb-1">🍉</span>
+                    <strong class="text-red-300 text-sm tracking-wider block">夏</strong>
+                    <span class="text-[9px] text-red-500 font-mono block">SUMMER</span>
+                </button>
+                <button onclick="submitAnswer('秋')" class="bg-gradient-to-b from-amber-950 to-amber-900 border border-amber-800 hover:border-amber-400 hover:scale-105 active:scale-95 py-5 px-1 rounded-xl text-center transition-all duration-300">
+                    <span class="block text-2xl mb-1">🍂</span>
+                    <strong class="text-amber-300 text-sm tracking-wider block">秋</strong>
+                    <span class="text-[9px] text-amber-500 font-mono block">AUTUMN</span>
+                </button>
+                <button onclick="submitAnswer('冬')" class="bg-gradient-to-b from-blue-950 to-blue-900 border border-blue-800 hover:border-blue-400 hover:scale-105 active:scale-95 py-5 px-1 rounded-xl text-center transition-all duration-300">
+                    <span class="block text-2xl mb-1">❄️</span>
+                    <strong class="text-blue-300 text-sm tracking-wider block">冬</strong>
+                    <span class="text-[9px] text-blue-500 font-mono block">WINTER</span>
+                </button>
+                <button onclick="submitAnswer('歲月')" class="bg-gradient-to-b from-amber-900 to-amber-950 border border-yellow-800 hover:border-yellow-400 hover:scale-105 active:scale-95 py-5 px-1 rounded-xl text-center transition-all duration-300">
+                    <span class="block text-2xl mb-1">⏳</span>
+                    <strong class="text-yellow-100 text-sm tracking-wider block">歲月</strong>
+                    <span class="text-[9px] text-yellow-500 font-mono block">YEARS</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- SCREEN 5: 回饋與文化解答 + AI 感官共鳴 -->
+        <section id="screen-feedback" class="w-full h-full flex flex-col justify-between hidden transition-all duration-700">
+            <!-- 回饋大卡片 -->
+            <div id="feedback-card" class="flex-1 bg-hakka-card border-2 rounded-2xl p-4 md:p-6 flex flex-col justify-between relative overflow-y-auto">
+                <!-- 特效背景 -->
+                <div id="feedback-bg-glow" class="absolute inset-0 opacity-20 pointer-events-none"></div>
+
+                <!-- 回饋標題區 -->
+                <div class="text-center relative z-10 mb-4">
+                    <div id="feedback-icon-container" class="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-2">
+                        <i id="feedback-status-icon" class="text-3xl text-white"></i>
+                    </div>
+                    <h2 id="feedback-title" class="text-xl font-black tracking-widest text-white mb-0.5"></h2>
+                    <p id="feedback-sub" class="text-[10px] tracking-wider uppercase font-mono"></p>
+                </div>
+
+                <!-- 文化解答與 AI 互動混合區 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10 mb-4">
+                    <!-- 左半：客家文化原理解析 -->
+                    <div class="bg-black bg-opacity-60 border border-gray-800 rounded-xl p-4 flex flex-col justify-between">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-10 h-10 rounded-lg bg-gray-900 border border-hakka-gold flex items-center justify-center">
+                                <i id="culture-scent-icon" class="text-xl text-hakka-gold"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-hakka-gold tracking-widest block uppercase font-mono">Scent Unlocked</span>
+                                <h3 id="culture-scent-name" class="text-base font-bold text-white tracking-widest">---</h3>
+                            </div>
+                        </div>
+                        <p id="culture-description" class="text-xs text-gray-300 leading-relaxed overflow-y-auto max-h-48 scrollbar-thin"></p>
+                    </div>
+
+                    <!-- 右半：✨ AI 時空記憶共鳴解碼器 -->
+                    <div class="bg-slate-900 bg-opacity-80 border border-hakka-accent border-opacity-30 rounded-xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-hakka-accent text-xs">✨</span>
+                                <h4 class="text-xs font-bold text-hakka-accent tracking-widest">AI 時空記憶解碼</h4>
+                            </div>
+                            <p class="text-[11px] text-gray-400 mb-2">聞到這股氣味，給予你什麼直覺感受或回憶聯想？</p>
+                            
+                            <!-- 聯想輸入框 -->
+                            <input id="user-memory-input" type="text" placeholder="例：阿公老家泡的茶、下雨天微溼的泥土..." class="w-full bg-black bg-opacity-50 border border-gray-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-hakka-accent transition-colors mb-2">
+                            
+                            <!-- 快捷靈感標籤 -->
+                            <div class="flex flex-wrap gap-1.5 mb-3" id="quick-memory-tags">
+                                <!-- 這裡會動態載入氣味線索 -->
+                            </div>
+                        </div>
+
+                        <!-- AI 共鳴輸出顯示 -->
+                        <div class="bg-black bg-opacity-40 border border-gray-800 rounded p-2.5 min-h-[70px] flex items-center justify-center relative overflow-y-auto max-h-24">
+                            <!-- 載入中 -->
+                            <div id="ai-loading" class="hidden flex flex-col items-center gap-1.5">
+                                <i class="fa-solid fa-spinner animate-spin text-hakka-accent text-lg"></i>
+                                <span class="text-[10px] font-mono text-hakka-accent tracking-widest animate-pulse">RESONATING MEMORY DATA...</span>
+                            </div>
+                            <!-- 預設提示 -->
+                            <p id="ai-placeholder" class="text-[11px] text-gray-500 text-center italic">點擊下方按鈕，召喚 AI 連結風土靈魂...</p>
+                            <!-- 生成結果 -->
+                            <p id="ai-resonance-output" class="text-xs text-gray-300 leading-relaxed text-left w-full hidden typing-cursor"></p>
+                        </div>
+
+                        <button id="btn-trigger-resonance" onclick="generateMemoryResonance()" class="w-full mt-2 bg-gradient-to-r from-emerald-900 to-hakka-accent hover:brightness-110 active:scale-95 text-white font-bold py-1.5 px-3 rounded text-xs transition-all flex items-center justify-center gap-1.5 shadow">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <span>✨ 啟動 AI 時空共鳴</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 回到主畫面/下一站 - 按鈕點擊後將會自動接入音樂 -->
+                <button onclick="finishScentFeedback()" class="w-full bg-hakka-accent text-black font-black tracking-widest text-base py-3 rounded-xl shadow-lg hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 relative z-10">
+                    <span>確認特工紀錄，返航！</span>
+                    <i class="fa-solid fa-angles-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- SCREEN 6: 最終時光儀修復與個人性格卡片 -->
+        <section id="screen-final" class="w-full h-full flex flex-col justify-between hidden transition-all duration-700">
+            <!-- 時光儀重新啟動特效區 -->
+            <div id="final-activation" class="flex-1 flex flex-col justify-center items-center relative overflow-hidden bg-black bg-opacity-70 rounded-2xl border border-gray-800 p-6">
+                <!-- 旋轉時光儀 3D SVG -->
+                <div class="w-60 h-60 relative flex items-center justify-center spin-3d mb-4">
+                    <svg viewBox="0 0 100 100" class="w-full h-full text-hakka-accent">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2,2"/>
+                        <circle cx="50" cy="50" r="35" fill="none" stroke="#D4AF37" stroke-width="1"/>
+                        <circle cx="50" cy="50" r="25" fill="none" stroke="currentColor" stroke-width="0.5"/>
+                        <!-- 刻度與星芒 -->
+                        <line x1="50" y1="5" x2="50" y2="12" stroke="currentColor" stroke-width="2"/>
+                        <line x1="50" y1="95" x2="50" y2="88" stroke="currentColor" stroke-width="2"/>
+                        <line x1="5" y1="50" x2="12" y2="50" stroke="currentColor" stroke-width="2"/>
+                        <line x1="95" y1="50" x2="88" y2="50" stroke="currentColor" stroke-width="2"/>
+                        <!-- 核心 -->
+                        <polygon points="50,25 55,50 50,75 45,50" fill="url(#coreGradient)"/>
+                        <defs>
+                            <linearGradient id="coreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#39FF14" />
+                                <stop offset="100%" stop-color="#D4AF37" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-black tracking-widest text-hakka-gold animate-bounce mb-2">客家時光儀．能量爆發！</h2>
+                <p class="text-xs text-gray-400 text-center max-w-sm">時光網格成功重組，全展區嗅覺記憶檔案已回復！恭喜你完成了這趟不可思議的時間任務。</p>
+                <button onclick="generateAiAgentCard()" class="mt-6 bg-gradient-to-r from-hakka-accent to-hakka-gold text-black font-black tracking-widest text-base py-3 px-8 rounded-xl shadow-lg hover:brightness-110 active:scale-95 transition-all flex items-center gap-2 justify-center w-full">
+                    <i class="fa-solid fa-id-card-clip"></i>
+                    <span>✨ AI 專屬特工特質剖析</span>
+                </button>
+            </div>
+
+            <!-- 性格分析卡 (預設隱藏，點擊上鈕後淡入) -->
+            <div id="personality-card-overlay" class="flex-1 hidden flex-col justify-between bg-hakka-card border-2 border-hakka-gold rounded-2xl p-6 relative overflow-hidden glow-gold">
+                <!-- 卡片浮水印 -->
+                <div class="absolute inset-0 bg-gradient-to-tr from-yellow-950 via-hakka-card to-black opacity-90 pointer-events-none"></div>
+                <div class="absolute -right-20 -bottom-20 text-hakka-gold opacity-10 pointer-events-none">
+                    <i class="fa-solid fa-id-badge text-[250px]"></i>
+                </div>
+
+                <!-- AI 讀取卡片特效 -->
+                <div id="card-ai-building" class="absolute inset-0 z-20 bg-black bg-opacity-90 flex flex-col items-center justify-center gap-4">
+                    <div class="relative w-20 h-20">
+                        <div class="absolute inset-0 border-4 border-hakka-gold border-t-transparent rounded-full animate-spin"></div>
+                        <div class="absolute inset-2 border-4 border-hakka-accent border-b-transparent rounded-full animate-spin" style="animation-duration: 1.5s"></div>
+                    </div>
+                    <p class="text-hakka-accent font-mono tracking-widest text-sm uppercase animate-pulse">Gemini AI Synthesis in Progress...</p>
+                    <p class="text-xs text-gray-400 text-center max-w-xs">正在深度分析特工感官特徵、解碼留下的時光線索...</p>
+                </div>
+
+                <div class="relative z-10">
+                    <!-- 頂部特工ID -->
+                    <div class="flex justify-between items-center border-b border-gray-800 pb-3 mb-4">
+                        <div>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-widest font-mono">Agent Classification</span>
+                            <h3 id="card-agent-name" class="text-xl font-serif font-black text-hakka-gold tracking-widest">---</h3>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[10px] text-gray-500 uppercase tracking-widest font-mono">System ID</span>
+                            <span id="card-agent-id" class="text-xs text-white font-mono font-bold tracking-wider">#HA-7749</span>
+                        </div>
+                    </div>
+
+                    <!-- 屬性分析 -->
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="bg-black bg-opacity-40 p-3 rounded-xl border border-gray-800">
+                            <span class="text-[10px] text-gray-500 block">感官敏銳度 SENSITIVITY</span>
+                            <strong class="text-hakka-accent text-base font-mono">98.4% (級別 SS)</strong>
+                        </div>
+                        <div class="bg-black bg-opacity-40 p-3 rounded-xl border border-gray-800">
+                            <span class="text-[10px] text-gray-500 block">修復效率 EFFICIENCY</span>
+                            <strong id="card-time-spent" class="text-hakka-accent text-base font-mono">03:45</strong>
+                        </div>
+                    </div>
+
+                    <!-- 性格描述 -->
+                    <div class="bg-slate-900 bg-opacity-60 border border-gray-800 p-4 rounded-xl mb-4">
+                        <span class="text-xs text-hakka-gold font-bold tracking-widest block mb-1">🔍 氣味核心特質分析</span>
+                        <p id="card-description" class="text-sm text-gray-300 leading-relaxed overflow-y-auto max-h-36 scrollbar-thin"></p>
+                    </div>
+
+                    <!-- 經典金句 -->
+                    <div class="text-center italic text-xs text-hakka-accent tracking-widest border-t border-gray-800 pt-4 mb-2" id="card-quote">
+                        「時間沉澱出滋味，而你，是時光唯一的守護者。」
+                    </div>
+                </div>
+
+                <!-- 底部重置按鈕 -->
+                <button onclick="resetGame()" class="w-full bg-slate-900 border border-gray-700 text-gray-300 font-bold tracking-widest text-sm py-3 rounded-xl hover:bg-slate-800 active:scale-95 transition-all relative z-10 flex items-center justify-center gap-2 mt-4">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span>重置系統．重啟新任務</span>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 底部導覽列 -->
+    <footer class="relative z-20 bg-hakka-card bg-opacity-70 backdrop-blur-md border border-gray-800 rounded-xl p-3 flex justify-between items-center text-xs text-gray-500 shadow-md">
+        <div class="flex items-center gap-2">
+            <span class="inline-block w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+            <span>系統狀態：任務執行中</span>
+        </div>
+        <div class="font-mono text-[10px] tracking-wider text-gray-400">
+            &copy; 2026 客家風味實驗室 ALL RIGHTS RESERVED
+        </div>
+    </footer>
+
+    <!-- 自製錯誤/提示浮動視窗 (非 Alert) -->
+    <div id="toast-modal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-hakka-card border border-red-500 rounded-xl p-6 shadow-2xl max-w-sm w-[90%] hidden">
+        <div class="text-center">
+            <i class="fa-solid fa-triangle-exclamation text-red-500 text-4xl mb-3"></i>
+            <h4 id="toast-title" class="text-lg font-bold text-white tracking-widest mb-2">錯誤代碼</h4>
+            <p id="toast-message" class="text-xs text-gray-400 leading-relaxed mb-4"></p>
+            <button onclick="closeToast()" class="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-6 rounded-lg text-xs tracking-wider transition-all">
+                確認
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== 互動邏輯 & ASMR 音效引擎 JavaScript ==================== -->
+    <script>
+        // 1. 氣味資料庫與文化解答
+        const scentDB = {
+            'A': {
+                name: '杭菊',
+                season: '秋',
+                vfxColor: '#FFEAA7', // 金黃秋色
+                icon: 'fa-sun',
+                desc: '白花瓣如雪花飄落、柔和的深秋光影。',
+                asmrText: '清風拂過乾燥草本聲、悠揚笛聲。',
+                culture: '【秋・收斂與沉靜】苗栗銅鑼的杭菊，在秋末冬初如同雪花般綻放。客家人將落下的菊瓣悉心收集晒乾，泡製成茶，那是一股在微涼秋意中給予身心最沉靜撫慰的溫柔花香。',
+                soundType: 'autumn',
+                tags: ['阿公的茶杯', '秋日的清晨', '淡淡菊花香', '乾燥草本氣息', '微風下的稻浪']
+            },
+            'B': {
+                name: '東方美人茶',
+                season: '夏',
+                vfxColor: '#E1BEE7', // 金黃微帶紫
+                icon: 'fa-leaf',
+                desc: '金黃茶液流動、一隻小綠葉蟬拍翅飛過。',
+                asmrText: '熱水注入茶杯的清脆聲、炎夏蟬鳴。',
+                culture: '【夏・盛夏的奇蹟】經由「小綠葉蟬」叮咬、在夏日豔陽下產生的獨特蜜香。這不是人工的調味，而是大自然在炎熱夏日賜予客家茶園最美妙的奇蹟與甘甜。',
+                soundType: 'summer',
+                tags: ['甘甜的蜜香', '盛夏森林', '現泡熱茶煙', '微風蟬鳴', '山林雨後']
+            },
+            'C': {
+                name: '擂茶',
+                season: '春',
+                vfxColor: '#55EFC4', // 大地青草綠
+                icon: 'fa-mortar-pestle',
+                desc: '綠色與大地色系的顆粒在螢幕上旋轉、碎裂。',
+                asmrText: '擂棍與陶缽摩擦的「沙沙」顆粒感、微風聲。',
+                culture: '【春・甦醒與生機】春回大地，客家庄磨起擂茶，茶葉、芝麻、花生在陶缽裡細細研磨，散發陣陣堅果與大地的生機氣息，象徵著春日的勞動、熱情與萬物甦醒。',
+                soundType: 'spring',
+                tags: ['厚重芝麻香', '現磨五穀粉', '草地青草香', '熱情待客茶', '阿婆磨茶聲']
+            },
+            'D': {
+                name: '鹹菜',
+                season: '冬',
+                vfxColor: '#A8E6CF', // 芥綠色波紋
+                icon: 'fa-cubes',
+                desc: '芥綠色波紋震動、鹽晶體落下的動畫。',
+                asmrText: '赤腳踩踏芥菜時，清脆扎實的「啵、啵」醃漬聲。',
+                culture: '【冬・冬藏的智慧】立冬後，客家人在稻田收割後撒下芥菜種子。採收時，人們赤腳踩踏芥菜，用鹽粒與重石壓榨水分，在冬陽下發酵，沉澱出蘊含家族守護的鹹菜記憶。',
+                soundType: 'winter',
+                tags: ['廚房大甕香', '酸甜發酵味', '冬日暖湯', '阿嬤手做菜', '田埂上的泥土']
+            },
+            'E': {
+                name: '酸柑茶',
+                season: '歲月',
+                vfxColor: '#FAB1A0', // 深褐色木質
+                icon: 'fa-lemon',
+                desc: '深褐色木質紋理展開、伴隨陽光穿透的絲線。',
+                asmrText: '繩線拉緊的緊繃聲、烘焙柴火劈啪聲。',
+                culture: '【歲月・淬鍊】將果肉掏空、塞入茶葉，綁上繁複的繩線，歷經「九蒸九晒」的反覆蒸、壓、晒、烘。這股極具穿透力的酸甜木質調，是歷經數年時光淬鍊後，客家最堅韌的滋味。',
+                soundType: 'years-citrus',
+                tags: ['陳年酸甜感', '古老樟木箱', '炭火焙烤味', '煙燻木頭香', '微酸的中藥香']
+            },
+            'F': {
+                name: '老菜脯',
+                season: '歲月',
+                vfxColor: '#74B9FF', // 黑色、時鐘倒轉
+                icon: 'fa-history',
+                desc: '濃郁黑色煙霧、時鐘倒轉的齒輪特效。',
+                asmrText: '重陶甕蓋被打開時的低沉悶響、厚重的時間迴音。',
+                culture: '【歲月・封存】俗稱客家黑金。將新鮮蘿蔔在甕中封存十年、二十年以上，水分子逐漸抽離，化為極致濃烈的黑色。這是黑夜與地底沉封的厚重氣息，帶你倒轉回溯數十年前的歷史一刻。',
+                soundType: 'years-gold',
+                tags: ['客家黑金香', '極致醇厚感', '陳年地窖氣味', '記憶深處的老甕', '老祖母的雞湯']
+            }
+        };
+
+        // 2. 遊戲狀態變數
+        let gameState = {
+            currentScreen: 'brief', // brief -> hub -> decode -> quiz -> feedback -> final
+            activeScentId: null, // 'A' - 'F'
+            collectedScents: {}, // 紀錄是否答對以及答題時間 e.g. { 'A': { correct: true, timeSpent: 12 } }
+            userMemories: {}, // 儲存使用者對每一站氣味的聯想記憶
+            missionStartTime: null,
+            scentStartTime: null,
+            timerInterval: null,
+            totalSeconds: 0,
+            isMuted: false
+        };
+
+        // 3. Web Audio API ASMR 音效引擎與 HTML5 背景音樂管理
+        let audioCtx = null;
+        let activeAsmrNode = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // 播放凱旋返航歌曲 (Fade-In 漸入效果)
+        function playTheHighlandAscent() {
+            const themeMusic = document.getElementById('theme-music');
+            if (!themeMusic) return;
+
+            // 確保被靜音時不播放，或者為靜音狀態
+            themeMusic.muted = gameState.isMuted;
+            
+            // 重置到起點播放
+            themeMusic.currentTime = 0;
+            themeMusic.volume = 0.0; // 從 0 開始漸入
+            
+            const playPromise = themeMusic.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    // 漸入 (Fade-In) 2秒
+                    let vol = 0;
+                    const fadeInInterval = setInterval(() => {
+                        if (vol < 0.8) {
+                            vol += 0.05;
+                            themeMusic.volume = vol;
+                        } else {
+                            clearInterval(fadeInInterval);
+                        }
+                    }, 100);
+                }).catch(error => {
+                    console.log("瀏覽器音訊限制，需要特工手動點擊螢幕以解鎖音樂撥放。");
+                });
+            }
+        }
+
+        // 停止背景音樂 (Fade-Out 漸出效果)
+        function stopTheHighlandAscent() {
+            const themeMusic = document.getElementById('theme-music');
+            if (!themeMusic) return;
+
+            let vol = themeMusic.volume;
+            const fadeOutInterval = setInterval(() => {
+                if (vol > 0.05) {
+                    vol -= 0.05;
+                    themeMusic.volume = vol;
+                } else {
+                    clearInterval(fadeOutInterval);
+                    themeMusic.pause();
+                    themeMusic.currentTime = 0;
+                }
+            }, 50);
+        }
+
+        // 即時合成 ASMR 氛圍聲與音效，確保不依賴外部連結
+        function playAsmrSound(type) {
+            initAudio();
+            if (gameState.isMuted) return;
+            stopAsmrSound();
+
+            const duration = 12; // 撥放12秒 (配合解碼時長)
+            const dest = audioCtx.destination;
+
+            // 創建主音量控制器
+            const mainGain = audioCtx.createGain();
+            mainGain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+            mainGain.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 1.5);
+            mainGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            mainGain.connect(dest);
+
+            // 噪聲發生器 (用於風聲、葉落、磨擦、海浪或下雪背景)
+            const bufferSize = audioCtx.sampleRate * duration;
+            const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+            const noiseNode = audioCtx.createBufferSource();
+            noiseNode.buffer = noiseBuffer;
+
+            // 噪聲濾波器 (做出風吹沙沙感)
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.Q.value = 5.0;
+
+            // 依據不同時光氣味，設計不同的聲景合成
+            switch (type) {
+                case 'spring': // 擂茶磨砂聲 + 生機笛聲
+                    filter.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    const modOsc = audioCtx.createOscillator();
+                    const modGain = audioCtx.createGain();
+                    modOsc.frequency.value = 1.5; // 每秒1.5次研磨
+                    modGain.gain.value = 150;
+                    modOsc.connect(modGain);
+                    modGain.connect(filter.frequency);
+                    modOsc.start();
+
+                    noiseNode.connect(filter);
+                    filter.connect(mainGain);
+                    noiseNode.start();
+
+                    const springNotes = [523.25, 587.33, 659.25, 783.99, 880.00]; 
+                    for (let t = 0.5; t < duration - 2; t += 2.2) {
+                        playMelodyNode(springNotes[Math.floor(Math.random() * springNotes.length)], t, 1.5, 'sine', 0.08, mainGain);
+                    }
+                    break;
+
+                case 'summer': // 蟬鳴聲 + 倒水泡茶清脆聲
+                    const summerCarrier = audioCtx.createOscillator();
+                    const summerModulator = audioCtx.createOscillator();
+                    const summerModGain = audioCtx.createGain();
+
+                    summerCarrier.type = 'sawtooth';
+                    summerCarrier.frequency.value = 3500; 
+                    
+                    summerModulator.frequency.value = 35; 
+                    summerModGain.gain.value = 800;
+
+                    summerModulator.connect(summerModGain);
+                    summerModGain.connect(summerCarrier.frequency);
+                    
+                    const summerFilter = audioCtx.createBiquadFilter();
+                    summerFilter.type = 'bandpass';
+                    summerFilter.frequency.value = 3000;
+                    summerFilter.Q.value = 3.0;
+
+                    summerCarrier.connect(summerFilter);
+                    summerFilter.connect(mainGain);
+
+                    summerModulator.start();
+                    summerCarrier.start();
+
+                    summerCarrier.stop(audioCtx.currentTime + duration);
+                    summerModulator.stop(audioCtx.currentTime + duration);
+
+                    const teaNotes = [1046.50, 1174.66, 1318.51, 1567.98]; 
+                    for (let t = 1.5; t < duration - 1; t += 1.8) {
+                        playMelodyNode(teaNotes[Math.floor(Math.random() * teaNotes.length)], t, 0.4, 'sine', 0.05, mainGain);
+                    }
+                    break;
+
+                case 'autumn': // 吹風掃葉聲 + 悠揚笛聲
+                    filter.frequency.setValueAtTime(250, audioCtx.currentTime);
+                    filter.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 4);
+                    filter.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 9);
+
+                    noiseNode.connect(filter);
+                    filter.connect(mainGain);
+                    noiseNode.start();
+
+                    const autumnNotes = [293.66, 329.63, 392.00, 440.00, 587.33]; 
+                    let delay = 1.0;
+                    autumnNotes.forEach((f) => {
+                        playMelodyNode(f, delay, 2.0, 'sine', 0.08, mainGain);
+                        delay += 2.2;
+                    });
+                    break;
+
+                case 'winter': // 赤腳踩雪、踩芥菜啵啵聲
+                    filter.frequency.setValueAtTime(150, audioCtx.currentTime);
+                    noiseNode.connect(filter);
+                    filter.connect(mainGain);
+                    noiseNode.start();
+
+                    for (let t = 0.5; t < duration - 1; t += 0.4 + Math.random() * 0.6) {
+                        const stepOsc = audioCtx.createOscillator();
+                        const stepGain = audioCtx.createGain();
+                        stepOsc.type = 'triangle';
+                        stepOsc.frequency.setValueAtTime(80, audioCtx.currentTime + t);
+                        stepOsc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + t + 0.1);
+
+                        stepGain.gain.setValueAtTime(0.01, audioCtx.currentTime + t);
+                        stepGain.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + t + 0.02);
+                        stepGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + t + 0.12);
+
+                        stepOsc.connect(stepGain);
+                        stepGain.connect(mainGain);
+                        stepOsc.start(audioCtx.currentTime + t);
+                        stepOsc.stop(audioCtx.currentTime + t + 0.15);
+                    }
+                    break;
+
+                case 'years-citrus': // 柴火柴火劈啪聲
+                    filter.frequency.setValueAtTime(300, audioCtx.currentTime);
+                    noiseNode.connect(filter);
+                    filter.connect(mainGain);
+                    noiseNode.start();
+
+                    for (let t = 0.2; t < duration - 1; t += Math.random() * 0.3) {
+                        const crackleSource = audioCtx.createBufferSource();
+                        crackleSource.buffer = noiseBuffer;
+                        const crackleGain = audioCtx.createGain();
+                        const crackleFilter = audioCtx.createBiquadFilter();
+                        crackleFilter.type = 'highpass';
+                        crackleFilter.frequency.value = 6000;
+
+                        crackleGain.gain.setValueAtTime(0.01, audioCtx.currentTime + t);
+                        crackleGain.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + t + 0.005);
+                        crackleGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + t + 0.02);
+
+                        crackleSource.connect(crackleFilter);
+                        crackleFilter.connect(crackleGain);
+                        crackleGain.connect(mainGain);
+                        crackleSource.start(audioCtx.currentTime + t);
+                        crackleSource.stop(audioCtx.currentTime + t + 0.03);
+                    }
+                    break;
+
+                case 'years-gold': // 重甕開啟聲 + 厚重時間迴音
+                    const baseOsc = audioCtx.createOscillator();
+                    const baseGain = audioCtx.createGain();
+                    baseOsc.type = 'triangle';
+                    baseOsc.frequency.setValueAtTime(65, audioCtx.currentTime + 0.2); 
+                    baseOsc.frequency.exponentialRampToValueAtTime(45, audioCtx.currentTime + 1.2);
+
+                    baseGain.gain.setValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    baseGain.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + 0.4);
+                    baseGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 2.0);
+
+                    baseOsc.connect(baseGain);
+                    baseGain.connect(mainGain);
+                    baseOsc.start(audioCtx.currentTime + 0.2);
+                    baseOsc.stop(audioCtx.currentTime + 2.2);
+
+                    const bellNotes = [110.00, 164.81, 220.00, 329.63]; 
+                    bellNotes.forEach((f, index) => {
+                        const playTime = 1.5 + (index * 2.2);
+                        playMelodyNode(f, playTime, 3.5, 'triangle', 0.1, mainGain);
+                    });
+                    break;
+            }
+
+            activeAsmrNode = mainGain;
+        }
+
+        function playMelodyNode(frequency, startTime, length, type, gainVal, destination) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = type;
+            osc.frequency.setValueAtTime(frequency, audioCtx.currentTime + startTime);
+
+            gain.gain.setValueAtTime(0.001, audioCtx.currentTime + startTime);
+            gain.gain.linearRampToValueAtTime(gainVal, audioCtx.currentTime + startTime + 0.2);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + startTime + length);
+
+            osc.connect(gain);
+            gain.connect(destination);
+
+            osc.start(audioCtx.currentTime + startTime);
+            osc.stop(audioCtx.currentTime + startTime + length);
+        }
+
+        function stopAsmrSound() {
+            if (activeAsmrNode) {
+                try {
+                    activeAsmrNode.disconnect();
+                } catch (e) {}
+                activeAsmrNode = null;
+            }
+        }
+
+        function playUiSound(type) {
+            initAudio();
+            if (gameState.isMuted) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            switch (type) {
+                case 'click':
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.12);
+                    break;
+                case 'alarm':
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(440, audioCtx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.4);
+                    break;
+                case 'correct':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); 
+                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.08); 
+                    osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.16); 
+                    osc.frequency.setValueAtTime(1046.50, audioCtx.currentTime + 0.24); 
+                    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.55);
+                    break;
+                case 'wrong':
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, audioCtx.currentTime); 
+                    osc.frequency.linearRampToValueAtTime(110, audioCtx.currentTime + 0.4);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.45);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.5);
+                    break;
+                case 'startup':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.8);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.9);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 1.0);
+                    break;
+            }
+        }
+
+        function toggleMute() {
+            gameState.isMuted = !gameState.isMuted;
+            const icon = document.getElementById('sound-icon');
+            const themeMusic = document.getElementById('theme-music');
+
+            if (gameState.isMuted) {
+                icon.className = 'fa-solid fa-volume-xmark text-lg text-red-500';
+                stopAsmrSound();
+                if (themeMusic) themeMusic.muted = true;
+            } else {
+                icon.className = 'fa-solid fa-volume-high text-lg text-hakka-accent';
+                initAudio();
+                if (themeMusic) themeMusic.muted = false;
+            }
+        }
+
+
+        // 4. 遊戲核心流程轉場控制
+        function showScreen(screenId) {
+            document.getElementById('screen-brief').classList.add('hidden');
+            document.getElementById('screen-hub').classList.add('hidden');
+            document.getElementById('screen-decode').classList.add('hidden');
+            document.getElementById('screen-quiz').classList.add('hidden');
+            document.getElementById('screen-feedback').classList.add('hidden');
+            document.getElementById('screen-final').classList.add('hidden');
+
+            document.getElementById(`screen-${screenId}`).classList.remove('hidden');
+            gameState.currentScreen = screenId;
+        }
+
+        function acceptMission() {
+            playUiSound('startup');
+            showScreen('hub');
+            startMissionTimer();
+        }
+
+        function startMissionTimer() {
+            gameState.missionStartTime = new Date();
+            gameState.timerInterval = setInterval(() => {
+                gameState.totalSeconds++;
+                const mins = Math.floor(gameState.totalSeconds / 60).toString().padStart(2, '0');
+                const secs = (gameState.totalSeconds % 60).toString().padStart(2, '0');
+                const timeStr = `${mins}:${secs}`;
+                document.getElementById('time-spent').innerText = timeStr;
+            }, 1000);
+        }
+
+        let decodeTimeout = null;
+        function selectScent(id) {
+            playUiSound('click');
+            gameState.activeScentId = id;
+            gameState.scentStartTime = new Date(); 
+
+            document.getElementById('decode-scent-id').innerText = `SCENT-${id}`;
+            document.getElementById('decode-status').innerText = '正在解碼氣味波形...';
+            document.getElementById('decode-instruction').innerText = '平板正在讀取粒子特徵，請閉上雙眼、細細品味，讓身心沉浸在 ASMR 氣味聲景中...';
+
+            const data = scentDB[id];
+            
+            playAsmrSound(data.soundType);
+            generateParticlesForScent(data.vfxColor);
+
+            showScreen('decode');
+
+            decodeTimeout = setTimeout(() => {
+                enterQuizPhase();
+            }, 12000);
+        }
+
+        function skipDecodeAnimation() {
+            if (decodeTimeout) {
+                clearTimeout(decodeTimeout);
+            }
+            playUiSound('click');
+            enterQuizPhase();
+        }
+
+        function enterQuizPhase() {
+            const id = gameState.activeScentId;
+            const data = scentDB[id];
+
+            document.getElementById('quiz-station-id').innerText = id;
+            document.getElementById('quiz-visual-desc').innerText = `【氣味印象】${data.desc}`;
+            
+            const iconEl = document.getElementById('quiz-center-icon');
+            iconEl.className = `fa-solid ${data.icon} text-4xl text-hakka-gold`;
+
+            showScreen('quiz');
+        }
+
+        function submitAnswer(chosenSeason) {
+            stopAsmrSound();
+            const id = gameState.activeScentId;
+            const data = scentDB[id];
+            const isCorrect = (data.season === chosenSeason);
+
+            const durationSec = Math.round((new Date() - gameState.scentStartTime) / 1000);
+
+            gameState.collectedScents[id] = {
+                correct: isCorrect,
+                timeSpent: durationSec
+            };
+
+            document.getElementById('user-memory-input').value = '';
+            document.getElementById('ai-resonance-output').classList.add('hidden');
+            document.getElementById('ai-placeholder').classList.remove('hidden');
+            document.getElementById('ai-loading').classList.add('hidden');
+
+            const tagContainer = document.getElementById('quick-memory-tags');
+            tagContainer.innerHTML = '';
+            data.tags.forEach(tag => {
+                const btn = document.createElement('button');
+                btn.className = 'bg-slate-800 hover:bg-slate-700 hover:text-hakka-accent border border-gray-700 text-[10px] text-gray-300 px-2 py-0.5 rounded transition-colors';
+                btn.innerText = tag;
+                btn.onclick = () => {
+                    document.getElementById('user-memory-input').value = tag;
+                    playUiSound('click');
+                };
+                tagContainer.appendChild(btn);
+            });
+
+            const card = document.getElementById('feedback-card');
+            const statusIcon = document.getElementById('feedback-status-icon');
+            const iconContainer = document.getElementById('feedback-icon-container');
+            const title = document.getElementById('feedback-title');
+            const sub = document.getElementById('feedback-sub');
+            const bgGlow = document.getElementById('feedback-bg-glow');
+
+            const cultScentIcon = document.getElementById('culture-scent-icon');
+            const cultScentName = document.getElementById('culture-scent-name');
+            const cultDesc = document.getElementById('culture-description');
+
+            cultScentIcon.className = `fa-solid ${data.icon} text-xl text-hakka-gold`;
+            cultScentName.innerText = data.name;
+            cultDesc.innerText = data.culture;
+
+            if (isCorrect) {
+                playUiSound('correct');
+                card.style.borderColor = data.vfxColor;
+                bgGlow.style.background = `radial-gradient(circle, ${data.vfxColor} 0%, rgba(18,24,36,1) 75%)`;
+                
+                statusIcon.className = 'fa-solid fa-circle-check text-4xl';
+                iconContainer.className = 'w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-2 bg-green-500 bg-opacity-20 text-green-400';
+                title.innerText = '時光刻度解鎖成功！';
+                sub.innerText = 'TIME ANCHOR MATCHED SUCCESS';
+
+                document.getElementById(`name-${id}`).innerText = data.name;
+                document.getElementById(`badge-${id}`).className = 'absolute top-2 right-2 flex items-center justify-center w-6 h-6 rounded-full bg-green-950 border border-green-500 text-xs font-bold text-green-400';
+            } else {
+                playUiSound('wrong');
+                card.style.borderColor = '#EF4444';
+                bgGlow.style.background = 'radial-gradient(circle, rgba(239,68,68,0.2) 0%, rgba(18,24,36,1) 75%)';
+
+                statusIcon.className = 'fa-solid fa-triangle-exclamation text-4xl';
+                iconContainer.className = 'w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-2 bg-red-500 bg-opacity-20 text-red-400';
+                title.innerText = '時光定位偏移！';
+                sub.innerText = 'TIME ANCHOR DRIFT DETECTED';
+            }
+
+            showScreen('feedback');
+        }
+
+        // ==================== ✨ GEMINI API 整合工具與特效 ====================
+        
+        async function callGemini(prompt, systemInstruction = "") {
+            const apiKey = ""; 
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }]
+            };
+            if (systemInstruction) {
+                payload.systemInstruction = { parts: [{ text: systemInstruction }] };
+            }
+
+            let delay = 1000;
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) {
+                        const result = await response.json();
+                        return result.candidates?.[0]?.content?.parts?.[0]?.text || "無法獲取解碼內容。";
+                    }
+                } catch (error) {
+                    // 默默重試
+                }
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2;
+            }
+            throw new Error("時光網絡通訊異常，請特工稍後再試。");
+        }
+
+        async function generateMemoryResonance() {
+            const id = gameState.activeScentId;
+            const data = scentDB[id];
+            const userMemory = document.getElementById('user-memory-input').value.trim();
+
+            if (!userMemory) {
+                showToast("數據遺失", "請先輸入或點選下方的感官記憶，再啟動解碼器！");
+                return;
+            }
+
+            playUiSound('click');
+            gameState.userMemories[id] = userMemory;
+
+            document.getElementById('ai-placeholder').classList.add('hidden');
+            document.getElementById('ai-resonance-output').classList.add('hidden');
+            document.getElementById('ai-loading').classList.remove('hidden');
+
+            const systemPrompt = `你是一位精通客家文化史與感官記憶科學的『感官時間分析大師』。你的任務是將使用者的私人感官聯想與客家氣味文化串聯，用詩意、特工科幻且溫暖的語氣，解密兩者如何在時光隧道中產生靈魂共鳴。`;
+            const userQuery = `時光特工聞到了「${data.name}」（其文化背景：${data.culture}），並留下了個人的感官記憶聯想：「${userMemory}」。請撰寫一段大約 120 字的共鳴解密，解釋使用者的私人回憶與此客家風土靈魂的連結。最後必須加上一句富含智慧的客家風土點評。`;
+
+            try {
+                const responseText = await callGemini(userQuery, systemPrompt);
+                
+                document.getElementById('ai-loading').classList.add('hidden');
+                const outputEl = document.getElementById('ai-resonance-output');
+                outputEl.innerText = responseText;
+                outputEl.classList.remove('hidden');
+                
+                playUiSound('correct');
+
+            } catch (error) {
+                document.getElementById('ai-loading').classList.add('hidden');
+                document.getElementById('ai-placeholder').classList.remove('hidden');
+                showToast("通訊失敗", error.message);
+            }
+        }
+
+        async function generateAiAgentCard() {
+            playUiSound('click');
+            document.getElementById('final-activation').classList.add('hidden');
+            document.getElementById('personality-card-overlay').classList.remove('hidden');
+            document.getElementById('card-ai-building').classList.remove('hidden');
+
+            let correctCount = 0;
+            let longestTime = 0;
+            let longestScentId = 'A';
+            let memoryStrings = [];
+
+            for (let id in scentDB) {
+                if (gameState.collectedScents[id] && gameState.collectedScents[id].correct) {
+                    correctCount++;
+                }
+                const s = gameState.collectedScents[id];
+                if (s && s.timeSpent > longestTime) {
+                    longestTime = s.timeSpent;
+                    longestScentId = id;
+                }
+                if (gameState.userMemories[id]) {
+                    memoryStrings.push(`${scentDB[id].name} -> ${gameState.userMemories[id]}`);
+                }
+            }
+
+            const favoriteScent = scentDB[longestScentId].name;
+            const mins = Math.floor(gameState.totalSeconds / 60).toString().padStart(2, '0');
+            const secs = (gameState.totalSeconds % 60).toString().padStart(2, '0');
+            const totalTimeString = `${mins}分${secs}秒`;
+
+            const systemPrompt = `你是一位高階『時光感官特工學院』的首席分析官。請根據特工的任務記錄數據，為使用者量身打造一份專屬的『時光特工個性鑑定卡』。
+            請直接輸出 JSON 格式的數據，以便程式解析（請確保沒有額外的 Markdown 或說明，直接返回合法 JSON 物件，格式如下）：
+            {
+              "agentTitle": "時光代號（大約6字，如：時光琥珀・記憶探尋者）",
+              "traitAnalysis": "感官與性格深度剖析（大約150字，需整合他停留最久的氣味與在任務中留下的獨特感官記憶）",
+              "quote": "一句融合味道、時光與客家智慧的特工箴言"
+            }`;
+
+            const userQuery = `特工任務報告如下：
+            - 任務總耗時：${totalTimeString}
+            - 成功重組氣味軌跡：${correctCount} / 6
+            - 停留探索最久的氣味站：${favoriteScent}（探索了 ${longestTime} 秒）
+            - 在各氣味站捕捉到的記憶分子聯想：[${memoryStrings.join(' , ')}]
+            
+            請為他編寫專屬鑑定書。`;
+
+            try {
+                const responseText = await callGemini(userQuery, systemPrompt);
+                
+                let cleanedJson = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
+                const cardData = JSON.parse(cleanedJson);
+
+                document.getElementById('card-agent-name').innerText = cardData.agentTitle || "時光感官特工";
+                document.getElementById('card-description').innerText = cardData.traitAnalysis || "你是一位敏銳的特工。";
+                document.getElementById('card-quote').innerText = `「${cardData.quote}」` || "「時間沉澱出滋味，而你，是時光唯一的守護者。」";
+                
+                document.getElementById('card-time-spent').innerText = `${mins}:${secs}`;
+                
+                document.getElementById('card-ai-building').classList.add('hidden');
+                playUiSound('correct');
+
+            } catch (error) {
+                fallbackPersonalityCalculation(mins, secs, longestScentId, longestTime);
+                document.getElementById('card-ai-building').classList.add('hidden');
+            }
+        }
+
+        function fallbackPersonalityCalculation(mins, secs, longestScentId, longestTime) {
+            document.getElementById('card-time-spent').innerText = `${mins}:${secs}`;
+            const cardTitle = document.getElementById('card-agent-name');
+            const cardDesc = document.getElementById('card-description');
+            const cardQuote = document.getElementById('card-quote');
+
+            if (longestScentId === 'F') {
+                cardTitle.innerText = '時光老菜脯特工';
+                cardDesc.innerText = `你在「老菜脯」站停留最久 (${longestTime}秒)。你擁有沉穩且深謀遠慮的性格。不隨波逐流，講求時間的沉澱。經歷歲月越發芳醇，是特工團隊中最值得信賴的守護者！`;
+                cardQuote.innerText = '「最深刻的，往往封存在時間最深處。」';
+            } else {
+                cardTitle.innerText = '感官探索型特工';
+                cardDesc.innerText = `你在探索任務中展現了 98.4% 的感官敏銳度。透過對風土環境與 ASMR 的雙重捕捉，成功將客家百年記憶再次合一，重啟時光軌跡！`;
+                cardQuote.innerText = '「時間沉澱出滋味，而你，是時光唯一的守護者。」';
+            }
+        }
+
+        // ======================================================================
+
+        // 完成本站回饋，重回總部(Hub)或直接觸發最終修復
+        function finishScentFeedback() {
+            playUiSound('click');
+            
+            // 計算目前答對了多少站
+            let correctCount = 0;
+            for (let id in scentDB) {
+                if (gameState.collectedScents[id] && gameState.collectedScents[id].correct) {
+                    correctCount++;
+                }
+            }
+
+            // 更新 Hub 主頁面上的進度條
+            document.getElementById('collected-count').innerText = correctCount;
+            const progressPercent = (correctCount / 6) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+
+            // 若 6 站全部答對，解鎖最終時光儀修復與性格卡片！
+            if (correctCount === 6) {
+                triggerFinalActivation();
+            } else {
+                showScreen('hub');
+            }
+        }
+
+        // 觸發最終時光儀大修復（此處為「返航點」，開始接入 The_Highland_Ascent 主題音樂）
+        function triggerFinalActivation() {
+            clearInterval(gameState.timerInterval); // 停止計時
+            playUiSound('startup');
+            
+            // 完美重啟時光儀！接入高燃凱旋歌曲《The Highland Ascent》
+            playTheHighlandAscent();
+            
+            showScreen('final');
+        }
+
+        // 重置遊戲
+        function resetGame() {
+            playUiSound('click');
+            
+            // 停止主題曲播放
+            stopTheHighlandAscent();
+
+            gameState = {
+                currentScreen: 'brief',
+                activeScentId: null,
+                collectedScents: {},
+                userMemories: {},
+                missionStartTime: null,
+                scentStartTime: null,
+                timerInterval: null,
+                totalSeconds: 0,
+                isMuted: false
+            };
+
+            for (let id in scentDB) {
+                document.getElementById(`name-${id}`).innerText = `未知氣味瓶 ${id}`;
+                document.getElementById(`badge-${id}`).className = 'absolute top-2 right-2 flex items-center justify-center w-6 h-6 rounded-full bg-gray-900 text-xs font-bold text-gray-500';
+            }
+
+            document.getElementById('collected-count').innerText = '0';
+            document.getElementById('progress-bar').style.width = '0%';
+            document.getElementById('time-spent').innerText = '00:00';
+
+            document.getElementById('final-activation').classList.remove('hidden');
+            document.getElementById('personality-card-overlay').classList.add('hidden');
+
+            showScreen('brief');
+        }
+
+        // 視覺特效生成器 (微粒子雨 VFX)
+        function generateParticlesForScent(color) {
+            const container = document.getElementById('vfx-canvas-container');
+            container.innerHTML = ''; 
+
+            for (let i = 0; i < 30; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                
+                const size = Math.random() * 12 + 6;
+                p.style.width = `${size}px`;
+                p.style.height = `${size}px`;
+                p.style.backgroundColor = color;
+                p.style.borderRadius = Math.random() > 0.5 ? '50%' : '20% 80% 40% 60%';
+                
+                p.style.left = `${Math.random() * 100}vw`;
+                p.style.top = `-${size + 20}px`;
+                
+                const delay = Math.random() * 5;
+                const duration = Math.random() * 6 + 5;
+                p.style.animationName = 'fall';
+                p.style.animationDuration = `${duration}s`;
+                p.style.animationDelay = `${delay}s`;
+                p.style.filter = `blur(${Math.random() * 2}px) drop-shadow(0 0 5px ${color})`;
+                
+                container.appendChild(p);
+            }
+        }
+
+        // 客製化 Toast Modal 系統
+        function showToast(title, message) {
+            document.getElementById('toast-title').innerText = title;
+            document.getElementById('toast-message').innerText = message;
+            document.getElementById('toast-modal').classList.remove('hidden');
+            playUiSound('alarm');
+        }
+
+        function closeToast() {
+            document.getElementById('toast-modal').classList.add('hidden');
+        }
+
+        // 初始化：點擊背景啟動 AudioCtx
+        window.onload = function() {
+            window.onclick = function() {
+                initAudio();
+            };
+        }
+    </script>
+</body>
+</html>
